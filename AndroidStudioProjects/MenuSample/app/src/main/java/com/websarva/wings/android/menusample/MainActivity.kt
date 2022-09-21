@@ -3,6 +3,7 @@ package com.websarva.wings.android.menusample
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         lvMenu.adapter = adapter
         // リストタップのリスナクラス登録。
         lvMenu.onItemClickListener = ListItemClickListener()
+
+        registerForContextMenu(lvMenu)
     }
 
     private fun createTeishokuList(): MutableList<MutableMap<String, Any>> {
@@ -178,5 +181,15 @@ class MainActivity : AppCompatActivity() {
         // アダプタの登録。
         lvMenu.adapter = adapter
         return returnVal
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, view: View, menuInfo:
+    ContextMenu.ContextMenuInfo) {
+        // 親クラスの同名メソッドの呼び出し。
+        super.onCreateContextMenu(menu, view, menuInfo)
+        // コンテキストメニューxmlファイルをインフレイト。
+        menuInflater.inflate(R.menu.menu_context_menu_list, menu)
+        // コンテキストメニューのヘッダタイトルを設定。
+        menu.setHeaderTitle(R.string.menu_list_context_header)
     }
 }
