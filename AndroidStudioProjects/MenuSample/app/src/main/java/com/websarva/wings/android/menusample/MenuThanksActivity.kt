@@ -2,6 +2,7 @@ package com.websarva.wings.android.menusample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 
@@ -21,10 +22,22 @@ class MenuThanksActivity : AppCompatActivity() {
         // TextViewに定食名と金額を表示。
         tvMenuName.text = menuName
         tvMenuPrice.text = menuPrice
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
-    // 戻るボタンをタップした時の処理。
-    fun onBackButtonClick(view: View) {
-        finish()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // 戻り値用の変数を初期値trueで用意。
+        var returnVal = true
+        // 選択されたメニューが「戻る」の場合、アクティビティを終了。
+        if(item.itemId == android.R.id.home) {
+            finish()
+        }
+        // それ以外は…
+        else {
+            // 親クラスの同名メソッドを呼び出し、その戻り値をreturnValとする。
+            returnVal = super.onOptionsItemSelected(item)
+        }
+        return returnVal
     }
 }
