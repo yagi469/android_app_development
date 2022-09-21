@@ -3,6 +3,7 @@ package com.websarva.wings.android.menusample
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ListView
@@ -122,5 +123,11 @@ class MainActivity : AppCompatActivity() {
             // 第2画面の起動。
             startActivity(intent2MenuThanks)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // オプションメニュー用xmlファイルをインフレイト。
+        menuInflater.inflate(R.menu.menu_options_menu_list, menu)
+        return true
     }
 }
