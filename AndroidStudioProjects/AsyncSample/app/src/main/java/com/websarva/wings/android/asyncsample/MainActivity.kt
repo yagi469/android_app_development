@@ -3,6 +3,7 @@ package com.websarva.wings.android.asyncsample
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ListView
@@ -10,6 +11,12 @@ import android.widget.SimpleAdapter
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.core.os.HandlerCompat
+import java.io.BufferedReader
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
+import java.net.URL
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
@@ -84,9 +91,50 @@ Runnable {
 
         @WorkerThread
         override fun run() {
-            // ここにWeb APIにアクセスするコードを記述。
+            //　天気情報サービスから取得したJSON文字列。天気情報が格納されている。
+            var result = ""
+            // URLオブジェクトを生成。
+            val url = URL(_url)
+            // URLオブジェクトからHttpURLConnectionオブジェクトを取得。
+            val con = url.openConnection() as? HttpURLConnection
+            // conがnullじゃないならば…
+            con?.let {
+                try {
+                    // 接続に使ってもよい時間を設定。
+                    it.connectTimeout = 1000
+                    // データ取得に使ってもよい時間。
+                    it.readTimeout = 1000
+                    // HTTP接続メソッドをGETに設定。
+                    it.requestMethod = "GET"
+                    // 接続。
+                    it.connect()
+                    // HttpURLConnectionオブジェクトからレスポンスデータを取得。
+                    val stream = it.inputStream
+                    // レスポンスデータであるInputStreamを文字列に変換。
+                    result = is2String(stream)
+                    // InputStreamオブジェクトを解放。
+                    stream.close()
+                }
+                catch(ex: SocketTimeoutException) {
+                    Log.w(DEBUG_TAG, "通信タイムアウト", ex)
+                }
+                // HttpURLConnectionオブジェクトを解放。
+                it.disconnect()
+            }
             val postExecutor = WeatherInfoPostExecutor()
             _handler.post(postExecutor)
+        }
+
+        private fun is2String(stream: InputStream): String {
+            val sb = java.lang.StringBuilder()
+            val reader = BufferedReader(InputStreamReader(stream, "UTF-8"))
+            var line = reader.readLine()
+            while(line != null) {
+                sb.append(line)
+                line = reader.readLine()
+            }
+            reader.close()
+            return sb.toString()
         }
     }
 
