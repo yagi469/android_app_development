@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.SimpleAdapter
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
     // クラス内のprivate定数を宣言するためにcompanion objectブロックとする。
@@ -62,6 +63,16 @@ class MainActivity : AppCompatActivity() {
     // お天気情報の取得処理を行うメソッド。
     private fun receiveWeatherInfo(urlFull: String) {
         // ここに非同期で天気情報を取得する処理を記述する。
+        val backgroundReceiver = WeatherInfoBackgroundReceiver()
+        val executeService = Executors.newSingleThreadExecutor()
+        executeService.submit(backgroundReceiver)
+    }
+
+    // 非同期でお天気情報APIにアクセスするためのクラス。
+    private inner class WeatherInfoBackgroundReceiver(): Runnable {
+        override fun run() {
+            // ここにWeb APIにアクセスするコードを記述。
+        }
     }
 
     // リストがタップされたときの処理が記述されたリスナクラス。
