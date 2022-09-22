@@ -2,10 +2,14 @@ package com.websarva.wings.android.asyncsample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.SimpleAdapter
+import androidx.annotation.UiThread
+import androidx.annotation.WorkerThread
+import androidx.core.os.HandlerCompat
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
@@ -61,17 +65,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     // お天気情報の取得処理を行うメソッド。
+    @UiThread
     private fun receiveWeatherInfo(urlFull: String) {
         // ここに非同期で天気情報を取得する処理を記述する。
-        val backgroundReceiver = WeatherInfoBackgroundReceiver()
+        val handler = HandlerCompat.createAsync(mainLooper)
+        val backgroundReceiver = WeatherInfoBackgroundReceiver(handler, urlFull)
         val executeService = Executors.newSingleThreadExecutor()
         executeService.submit(backgroundReceiver)
     }
 
     // 非同期でお天気情報APIにアクセスするためのクラス。
-    private inner class WeatherInfoBackgroundReceiver(): Runnable {
+    private inner class WeatherInfoBackgroundReceiver(handler: Handler, url: String):
+Runnable {
+        // ハンドラオブジェクト。
+        private val _handler = handler
+        // お天気情報を取得するURL。
+        private val _url = url
+
+        @WorkerThread
         override fun run() {
             // ここにWeb APIにアクセスするコードを記述。
+            val postExecutor = WeatherInfoPostExecutor()
+            _handler.post(postExecutor)
+        }
+    }
+
+    // 非同期でお天気情報を取得した後にUIスレッドでその情報を表示するためのクラス。
+    private inner class WeatherInfoPostExecutor(): Runnable {
+        @UiThread
+        override fun run() {
+            // ここにUIスレッドで行う処理コードを記述
         }
     }
 
