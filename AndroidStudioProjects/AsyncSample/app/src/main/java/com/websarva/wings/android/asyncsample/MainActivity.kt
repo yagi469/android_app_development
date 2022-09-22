@@ -8,9 +8,11 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.SimpleAdapter
+import android.widget.TextView
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.core.os.HandlerCompat
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -121,12 +123,12 @@ Runnable {
                 // HttpURLConnectionオブジェクトを解放。
                 it.disconnect()
             }
-            val postExecutor = WeatherInfoPostExecutor()
+            val postExecutor = WeatherInfoPostExecutor(result)
             _handler.post(postExecutor)
         }
 
         private fun is2String(stream: InputStream): String {
-            val sb = java.lang.StringBuilder()
+            val sb = StringBuilder()
             val reader = BufferedReader(InputStreamReader(stream, "UTF-8"))
             var line = reader.readLine()
             while(line != null) {
@@ -139,10 +141,38 @@ Runnable {
     }
 
     // 非同期でお天気情報を取得した後にUIスレッドでその情報を表示するためのクラス。
-    private inner class WeatherInfoPostExecutor(): Runnable {
+    private inner class WeatherInfoPostExecutor(result: String): Runnable {
+        // 取得したお天気情報JSON文字列。
+        private val _result = result
+
         @UiThread
         override fun run() {
-            // ここにUIスレッドで行う処理コードを記述
+            // ルートJSONオブジェクトを生成。
+            val rootJSON = JSONObject(_result)
+            // 都市名文字列を取得。
+            val cityName = rootJSON.getString("name")
+            // 緯度経度情報JSONオブジェクトを取得。
+            val coordJSON = rootJSON.getJSONObject("coord")
+            // 緯度情報文字列を取得。
+            val latitude = coordJSON.getString("lat")
+            // 経度情報文字列を取得。
+            val longitude = coordJSON.getString("lon")
+            // 天気情報JSON配列オブジェクトを取得。
+            val weatherJSONArray = rootJSON.getJSONArray("weather")
+            // 現在の天気情報JSONオブジェクトを取得。
+            val weatherJSON = weatherJSONArray.getJSONObject(0)
+            // 現在の天気情報文字列を取得。
+            val weather = weatherJSON.getString("description")
+            // 画面に表示する「〇〇の天気」文字列を生成。
+            val telop = "${cityName}の天気"
+            // 天気の詳細情報を表示する文字列の生成。
+            val desc = "現在は${weather}です。\n緯度は${latitude}度で経度は${longitude}度です。"
+            // 天気情報を表示するTextViewを取得。
+            val tvWeatherTelop = findViewById<TextView>(R.id.tvWeatherTelop)
+            val tvWeatherDesc = findViewById<TextView>(R.id.tvWeatherDesc)
+            // 天気情報を表示。
+            tvWeatherTelop.text = telop
+            tvWeatherDesc.text = desc
         }
     }
 
@@ -152,7 +182,7 @@ Runnable {
             val item = _list.get(position)
             val q = item.get("q")
             q?.let {
-                val urlFull = "$WEATHERINFO_URL&q&appid=$APP_ID"
+                val urlFull = "$WEATHERINFO_URL&q=$q&appid=$APP_ID"
                 receiveWeatherInfo(urlFull)
             }
         }
