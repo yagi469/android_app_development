@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
             val btBack = findViewById<Button>(R.id.btBack)
             btBack.isEnabled = true
             val btForward = findViewById<Button>(R.id.btForward)
+            btForward.isEnabled = true
         }
     }
 
@@ -92,6 +93,26 @@ class MainActivity : AppCompatActivity() {
         _player = null
         // 親クラスのメソッド呼び出し。
         super.onDestroy()
+    }
+
+    fun onBackButtonClick(view: View) {
+        // 再生位置を先頭に変更。
+        _player?.seekTo(0)
+    }
+
+    fun onForwardButtonClick(view: View) {
+        // プロパティのプレーヤーがnullでなければ…
+        _player?.let {
+            // 現在再生中のメディアファイルの長さを取得。
+            val duration = it.duration
+            // 再生位置を終端に変更。
+            it.seekTo(duration)
+            // 再生中でなければ…
+            if(!it.isPlaying) {
+                // 再生を開始。
+                it.start()
+            }
+        }
     }
 }
 
