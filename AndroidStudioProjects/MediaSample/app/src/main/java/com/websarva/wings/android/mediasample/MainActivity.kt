@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.CompoundButton
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class MainActivity : AppCompatActivity() {
     // メディアプレーヤープロパティ。
@@ -32,6 +34,10 @@ class MainActivity : AppCompatActivity() {
             // 非同期でメディア再生を準備。
             it.prepareAsync()
         }
+        // スイッチを取得。
+        val loopSwitch = findViewById<SwitchMaterial>(R.id.swLoop)
+        // スイッチにリスナを設定。
+        loopSwitch.setOnCheckedChangeListener(LoopSwitchChangedListener())
     }
 
     // プレーヤーの再生準備が整ったときのリスナクラス。
@@ -50,9 +56,15 @@ class MainActivity : AppCompatActivity() {
     // 再生が終了したときのリスナクラス。
     private inner class PlayerCompletionListener : MediaPlayer.OnCompletionListener {
         override fun onCompletion(mp: MediaPlayer?) {
-            // 再生ボタンのラベルを「再生」に設定。
-            val btPlay = findViewById<Button>(R.id.btPlay)
-            btPlay.setText(R.string.bt_play_play)
+            // プロパティのプレーヤーがnullでなければ…
+            _player?.let {
+                // ループ設定がされていないならば…
+                if(!it.isLooping) {
+                    // 再生ボタンのラベルを「再生」に設定。
+                    val btPlay = findViewById<Button>(R.id.btPlay)
+                    btPlay.setText(R.string.bt_play_play)
+                }
+            }
         }
     }
 
@@ -62,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             // 再生ボタンを取得。
             val btPlay = findViewById<Button>(R.id.btPlay)
             // プレーヤーが再生中ならば…
-            if(it.isPlaying) {
+            if (it.isPlaying) {
                 // プレーヤーを一時停止。
                 it.pause()
                 // 再生ボタンのラベルを「再生」に設定。
@@ -108,10 +120,17 @@ class MainActivity : AppCompatActivity() {
             // 再生位置を終端に変更。
             it.seekTo(duration)
             // 再生中でなければ…
-            if(!it.isPlaying) {
+            if (!it.isPlaying) {
                 // 再生を開始。
                 it.start()
             }
+        }
+    }
+
+    private inner class LoopSwitchChangedListener : CompoundButton.OnCheckedChangeListener {
+        override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
+            //  ループするかどうかを設定。
+            _player?.isLooping = isChecked
         }
     }
 }
