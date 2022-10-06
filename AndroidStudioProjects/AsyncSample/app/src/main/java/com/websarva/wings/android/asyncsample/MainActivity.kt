@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         private const val WEATHERINFO_URL = "https://api.openweathermap.org/data/2.5/weather?" +
 "lang=ja"
         // お天気APIにアクセスするためのAPIキー。
-        private const val APP_ID="6608fab0e1bc8da0d88597d601436c9f"
+        private const val APP_ID="..."
     }
 
     // リストビューに表示させるリストデータ。
